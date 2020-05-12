@@ -1,5 +1,6 @@
 # webcam_bg_blur
 Provide an extra layer of privacy to your webcam feed
+
 CS410/510 Computational Photography at Portland State
 
 ## Covid-19 related privacy concerns
