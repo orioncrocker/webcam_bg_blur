@@ -9,7 +9,8 @@
 
 import cv2 as cv
 import sys
-import webcam_bg_blur
+import foreground
+import face_detect
 
 def main():
   webcam = cv.VideoCapture(0)
@@ -22,7 +23,9 @@ def main():
       print("This program was written for opencv-python version 3.4.2.17!")
       print("Any other version might yield differing results, proceed with caution.")
 
-    webcam_bg_blur.start(webcam)
+    print("\nPress ESC to quit.")
+    #contour.start(webcam)
+    face_detect.start(webcam)
   else:
     print("Couldn't access your webcam! Is it plugged in?")
 
