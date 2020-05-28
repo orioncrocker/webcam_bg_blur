@@ -4,7 +4,7 @@
 # Date: 05/23/20
 # 
 # webcam_bg_blur
-# 	start wrapper for webcam_bg_blur
+# 	start script for webcam_bg_blur
 ############################################################
 
 import cv2 as cv
