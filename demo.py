@@ -15,10 +15,15 @@ import foreground as fg
 
 def blur_bg_demo(frame, contours):
   mask = frame.copy()
-  mask = cv.medianBlur(mask, 21)
-  cv.drawContours(mask, contours, -1, (0, 0, 0), cv.FILLED)
+  mask = cv.blur(mask, (27,27))
+  cv.drawContours(mask, contours, 0, (0, 0, 0), cv.FILLED)
   frame[np.where((mask != [0, 0, 0]).all(axis=2))] = [0, 0, 0]
   return mask, frame
+
+
+def display_hstack(comment, frame1, frame2):
+  stack = np.hstack((frame1, frame2))
+  cv.imshow(comment, stack)
 
 def start(webcam):
     edge = fg.get_edge()
@@ -26,24 +31,12 @@ def start(webcam):
     while True:
         _, frame = webcam.read()
         mask = fg.apply_edge(frame, edge)
-        cv.imshow('KNN Mask', mask)
+        mask = cv.cvtColor(mask, cv.COLOR_GRAY2RGB)
+        display_hstack('normal frame, knn', frame, mask)
 
         if cv.waitKey(33) == 27:
                 break
     cv.destroyAllWindows()
-
-    while True:
-        _, frame = webcam.read()
-        mask = fg.apply_edge(frame, edge)
-        contours = fg.get_contours(mask)
-
-        cv.drawContours(frame, contours, -1, (0,255,0), 4)
-        cv.imshow("All contours", frame)
-
-        if cv.waitKey(33) == 27:
-            break
-    cv.destroyAllWindows()
-
 
     contour_num = 3
     avg_contours = []
@@ -56,8 +49,10 @@ def start(webcam):
             avg_contours = avg_contours[1:]
         avg_contours.append(max(contours, key=cv.contourArea))
 
-        cv.drawContours(frame, avg_contours, -1, (0,255,0), 4)
-        cv.imshow("Only largest contours", frame)
+        frame2 = frame.copy()
+        cv.drawContours(frame, contours, -1, (0,255,0), 10)
+        cv.drawContours(frame2, avg_contours, 0, (0,255,0), 10)
+        display_hstack('all contours, largest contour', frame, frame2)
 
         if cv.waitKey(33) == 27:
             break
@@ -72,8 +67,10 @@ def start(webcam):
             avg_contours = avg_contours[1:]
         avg_contours.append(max(contours, key=cv.contourArea))
 
-        cv.drawContours(frame, avg_contours, -1, (0,255,0), cv.FILLED)
-        cv.imshow("Only largest contours filled with green", frame)
+        frame2 = frame.copy()
+        cv.drawContours(frame, avg_contours, 0, (0,255,0), 10)
+        cv.drawContours(frame2, avg_contours, 0, (0,255,0), cv.FILLED*10)
+        display_hstack('largest contours, largest contours filled', frame, frame2)
 
         if cv.waitKey(33) == 27:
             break
@@ -107,12 +104,18 @@ def start(webcam):
             avg_contours = avg_contours[1:]
         avg_contours.append(max(contours, key=cv.contourArea))
 
-        result = fg.blur_bg(frame, avg_contours)
+        result = fg.blur_bg(frame, avg_contours, 15)
         cv.imshow('Final result', result)
 
         if cv.waitKey(33) == 27:
             break
     cv.destroyAllWindows()
+
+    
+    _, frame = webcam.read()
+    x,y,h = frame.shape
+    background = cv.imread('test_images/background.png')
+    background = background[:x, :y]
 
     while True:
         _, frame = webcam.read()
@@ -124,7 +127,8 @@ def start(webcam):
         avg_contours.append(max(contours, key=cv.contourArea))
         contours = avg_contours
 
-        result = fg.layer_bg(frame, cv.imread('test_images/bg_test.png'), contours)
+        bg = background.copy()
+        result = fg.layer_bg(frame, bg, contours)
         cv.imshow('Final result', result)
 
         if cv.waitKey(33) == 27:
@@ -134,6 +138,7 @@ def start(webcam):
 
 def main():
     webcam = cv.VideoCapture(0)
+
     if webcam.isOpened():
         if sys.version_info[0] != 3:
             print("This program requires python3!")

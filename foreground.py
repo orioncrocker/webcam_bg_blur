@@ -21,6 +21,7 @@ def get_edge():
 
 def apply_edge(frame, edge):
   frame = edge.apply(frame)
+  x,y = frame.shape
   return cv.medianBlur(frame, 3)
 
 
@@ -30,16 +31,16 @@ def get_contours(frame):
   return contours
 
 
-def blur_bg(frame, contours):
+def blur_bg(frame, contours, k):
   mask = frame.copy()
-  mask = cv.medianBlur(mask, 21)
-  cv.drawContours(mask, contours, -1, (0, 0, 0), cv.FILLED)
+  mask = cv.blur(mask, (k,k))
+  cv.drawContours(mask, contours, 0, (0, 0, 0), cv.FILLED)
   frame[np.where((mask != [0, 0, 0]).all(axis=2))] = [0, 0, 0]
   return mask + frame
 
 
 def layer_bg(frame, bg, contours):
-  cv.drawContours(bg, contours, -1, (0, 0, 0), cv.FILLED)
+  cv.drawContours(bg, contours, 0, (0, 0, 0), cv.FILLED)
   frame[np.where((bg != [0, 0, 0]).all(axis=2))] = [0, 0, 0]
   return frame + bg
 
@@ -52,7 +53,7 @@ def display_all(knn, mask, frame, bg):
   cv.imshow('all frames', stack)
 
 
-def start(webcam):
+def start(webcam, k_size):
   edge = get_edge()
 
   contour_num = 3
@@ -68,11 +69,8 @@ def start(webcam):
     avg_contours.append(max(contours, key=cv.contourArea))
     contours = avg_contours
 
-    result = blur_bg(frame, avg_contours)
-    #result = layer_bg(frame, cv.imread('test_images/bg_test.png'), contours)
-
+    result = blur_bg(frame, avg_contours, k_size)
     cv.imshow('result', result)
 
-
     if cv.waitKey(33) == 27:
-      break
+      brea

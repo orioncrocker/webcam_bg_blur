@@ -24,7 +24,11 @@ def main():
       print("Any other version might yield differing results, proceed with caution.")
 
     print("\nPress ESC to quit.")
-    foreground.start(webcam)
+
+    kernel = 21
+    if len(sys.argv) > 1:
+      kernel = int(sys.argv[1])
+    foreground.start(webcam, kernel)
 
   else:
     print("Couldn't access your webcam! Is it plugged in?")
