@@ -10,7 +10,7 @@
 import cv2 as cv
 import sys
 import foreground
-import face_detect
+
 
 def main():
   webcam = cv.VideoCapture(0)
@@ -24,8 +24,8 @@ def main():
       print("Any other version might yield differing results, proceed with caution.")
 
     print("\nPress ESC to quit.")
-    #contour.start(webcam)
-    face_detect.start(webcam)
+    foreground.start(webcam)
+
   else:
     print("Couldn't access your webcam! Is it plugged in?")
 
