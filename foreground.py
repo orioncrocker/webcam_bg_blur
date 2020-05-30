@@ -31,16 +31,12 @@ def get_contours(frame):
   return contours
 
 
-def grabcut(mask, frame):
-  trimap = np.copy(mask)
-
-
-
 def blur_bg(frame, contours, k):
+  frame = cv.cvtColor(frame, cv.COLOR_BGR2BGRA)
   mask = frame.copy()
   mask = cv.blur(mask, (k,k))
-  cv.drawContours(mask, contours, 0, (0, 0, 0), cv.FILLED)
-  frame[np.where((mask != [0, 0, 0]).all(axis=2))] = [0, 0, 0]
+  cv.drawContours(mask, contours, 0, (0, 0, 0, 0), cv.FILLED)
+  frame[np.where((mask != [0, 0, 0, 0]).all(axis=2))] = [0, 0, 0, 0]
   return mask + frame
 
 
@@ -69,12 +65,12 @@ def start(webcam, k_size):
     mask = apply_edge(frame, edge)
     contours = get_contours(mask)
 
-    #if len(avg_contours) >= contour_num:
-    #  avg_contours = avg_contours[1:]
-    #avg_contours.append(max(contours, key=cv.contourArea))
-    #contours = avg_contours
+    if len(avg_contours) >= contour_num:
+      avg_contours = avg_contours[1:]
+    avg_contours.append(max(contours, key=cv.contourArea))
+    contours = avg_contours
 
-    result = blur_bg(frame, [max(contours, key=cv.contourArea)], k_size)
+    result = blur_bg(frame, contours, k_size)
     cv.imshow('result', result)
 
     if cv.waitKey(33) == 27:
