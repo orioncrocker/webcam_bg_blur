@@ -13,17 +13,11 @@ import cv2 as cv
 import numpy as np
 import foreground as fg
 
-def blur_bg_demo(frame, contours):
-  mask = frame.copy()
-  mask = cv.blur(mask, (27,27))
-  cv.drawContours(mask, contours, 0, (0, 0, 0), cv.FILLED)
-  frame[np.where((mask != [0, 0, 0]).all(axis=2))] = [0, 0, 0]
-  return mask, frame
-
 
 def display_hstack(comment, frame1, frame2):
   stack = np.hstack((frame1, frame2))
   cv.imshow(comment, stack)
+
 
 def start(vid):
     edge = fg.get_edge(10, False, 100)
@@ -32,7 +26,6 @@ def start(vid):
     # frame count info
     frame_count = 1
     end_frame = vid.get(cv.CAP_PROP_FRAME_COUNT)
-    display = True
 
     # contour info
     contour_num = 3
@@ -55,7 +48,6 @@ def start(vid):
                 greatest = greatest[1:]
             greatest.append(max(contours, key=cv.contourArea))
 
-
             if stage == 1:
                 cv.drawContours(frame, contours, -1, (0,255,0), 5)
             elif stage == 2:
@@ -75,11 +67,9 @@ def start(vid):
         if 0 <= stage < 4:
             mask = cv.cvtColor(mask, cv.COLOR_GRAY2RGB)
 
+        display_hstack('demo: ' + str(stage), frame, mask)
+
         key = cv.waitKey(33)
-
-        if display:
-            display_hstack('demo: ' + str(stage), frame, mask)
-
         if key == 27:
             break
         elif key == 81:
@@ -91,33 +81,30 @@ def start(vid):
             stage += 1
             cv.destroyAllWindows()
         elif key == 32:
-            if display:
-                display = False
-            else:
-                display = True
-
+            while True:
+                if cv.waitKey(33) == 32:
+                    break
 
         if stage > 5:
             break
     cv.destroyAllWindows()
 
+
 def main():
-    webcam = cv.VideoCapture(0)
+    if sys.version_info[0] != 3:
+        print("This program requires python3!")
+        quit()
+    version = float(cv.__version__[:3])
+    if version > 3.4 or version < 3.4:
+        print("This program was written for opencv-python version 3.4.2.17!")
+        print("Any other version might yield differing results, proceed with caution.")
 
-    if webcam.isOpened():
-        if sys.version_info[0] != 3:
-            print("This program requires python3!")
-            quit()
-        version = float(cv.__version__[:3])
-        if version > 3.4 or version < 3.4:
-            print("This program was written for opencv-python version 3.4.2.17!")
-            print("Any other version might yield differing results, proceed with caution.")
+    print("\nPress ESC to quit.")
+    vid1 = cv.VideoCapture('test_videos/duncan.mp4')
+    vid2 = cv.VideoCapture('test_videos/donald.mp4')
+    start(vid1)
+    start(vid2)
 
-        print("\nPress ESC to quit.")
-        vid1 = cv.VideoCapture('test_videos/duncan.mp4')
-        vid2 = cv.VideoCapture('test_videos/donald.mp4')
-        start(vid1)
-        start(vid2)
 
 if __name__ == '__main__':
     main()
