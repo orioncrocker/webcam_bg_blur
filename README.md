@@ -17,19 +17,19 @@ history = 100
 detectShadows = False
  ```
 
-![KNN](https://github.com/orioncrocker/webcam_bg_blur/blob/master/examples/duncan_knn.png)
+[!KNN[Duncan Trussel](examples/duncan_knn.png)](https://github.com/orioncrocker/webcam_bg_blur/blob/master/examples/duncan_knn.png)
 
 From this blob of motion detection, OpenCV can create contours. In this case, the contour that appears over the frame are the largest contours available, as sorted by `(max(contours, key=cv.contourArea)`.
 
-![Contours](https://github.com/orioncrocker/webcam_bg_blur/blob/master/examples/duncan_filled_contour.png)
+[!Contours[Duncan Trussel](examples/duncan_filled_contour.png)](https://github.com/orioncrocker/webcam_bg_blur/blob/master/examples/duncan_filled_contour.png)
 
 The frame is copied and blurred before both images are converted to RGBA color space. All pixels within contour mask on the background image are replaced with pixel value `[0,0,0,0]`. For every pixel that is not `[0,0,0,0]` in the original image, set the pixel value to `[0,0,0,0]`.
 
-![Transparent](https://github.com/orioncrocker/webcam_bg_blur/blob/master/examples/duncan_transparent.png)
+[!Transparent[Duncan Trussel](examples/duncan_transparent.png)](https://github.com/orioncrocker/webcam_bg_blur/blob/master/examples/duncan_transparent.png)
 
 Then the two images are simply added together to combine their pixel values into one image.
 
-![Result](https://github.com/orioncrocker/webcam_bg_blur/blob/master/examples/duncan_result.png)
+[!Result[Duncan Trussel](examples/duncan_result.png)](https://github.com/orioncrocker/webcam_bg_blur/blob/master/examples/duncan_result.png)
 
 ## Test it out for yourself
 `python3 start.py`
@@ -42,4 +42,4 @@ As of turning in this assignment, the program fully relies on the KNN algorithm 
 
 This is an example of a video that looks relatively stable, but is probably shot from a camera a great distance away and is zooming in. The micro-movements of the camera itself create a lot of noise for KNN to have to deal with.
 
-![Problems](https://github.com/orioncrocker/webcam_bg_blur/blob/master/examples/donald_movement.png)
+[!Problem[Donald Trump](examples/donald_movement.png)(https://github.com/orioncrocker/webcam_bg_blur/blob/master/examples/donald_movement.png)]
