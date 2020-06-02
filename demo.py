@@ -25,25 +25,26 @@ def display_hstack(comment, frame1, frame2):
   stack = np.hstack((frame1, frame2))
   cv.imshow(comment, stack)
 
-def start(vid1):
+def start(vid):
     edge = fg.get_edge(10, False, 100)
     stage = 0
 
     # frame count info
     frame_count = 1
-    end_frame = vid1.get(cv.CAP_PROP_FRAME_COUNT)
+    end_frame = vid.get(cv.CAP_PROP_FRAME_COUNT)
+    display = True
 
     # contour info
     contour_num = 3
     greatest = []
 
     while True:
-        _, frame = vid1.read()
+        _, frame = vid.read()
 
         # reset video
         frame_count += 1
         if frame_count >= end_frame:
-            vid1.set(cv.CAP_PROP_POS_FRAMES, 0)
+            vid.set(cv.CAP_PROP_POS_FRAMES, 0)
             frame_count = 1
 
         mask = fg.apply_edge(frame, edge)
@@ -54,6 +55,7 @@ def start(vid1):
                 greatest = greatest[1:]
             greatest.append(max(contours, key=cv.contourArea))
 
+
             if stage == 1:
                 cv.drawContours(frame, contours, -1, (0,255,0), 5)
             elif stage == 2:
@@ -63,17 +65,21 @@ def start(vid1):
             elif stage == 4:
                 frame = cv.cvtColor(frame, cv.COLOR_BGR2BGRA)
                 mask = frame.copy()
+                mask = cv.blur(mask, (21,21))
                 cv.drawContours(mask, greatest, 0, (0, 0, 0, 0), cv.FILLED)
                 frame[np.where((mask != [0, 0, 0, 0]).all(axis=2))] = [0, 0, 0, 0]
             elif stage == 5:
                 mask = fg.blur_bg(frame, greatest, 21)
                 frame = cv.cvtColor(frame, cv.COLOR_BGR2BGRA)
 
-        if stage >= 0 and stage < 4:
+        if 0 <= stage < 4:
             mask = cv.cvtColor(mask, cv.COLOR_GRAY2RGB)
-        display_hstack('demo: ' + str(stage), frame, mask)
 
         key = cv.waitKey(33)
+
+        if display:
+            display_hstack('demo: ' + str(stage), frame, mask)
+
         if key == 27:
             break
         elif key == 81:
@@ -84,6 +90,12 @@ def start(vid1):
         elif key == 83:
             stage += 1
             cv.destroyAllWindows()
+        elif key == 32:
+            if display:
+                display = False
+            else:
+                display = True
+
 
         if stage > 5:
             break
@@ -103,7 +115,7 @@ def main():
 
         print("\nPress ESC to quit.")
         vid1 = cv.VideoCapture('test_videos/duncan.mp4')
-        vid2 = cv.VideoCapture('test_videos/joe.mp4')
+        vid2 = cv.VideoCapture('test_videos/donald.mp4')
         start(vid1)
         start(vid2)
 

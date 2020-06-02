@@ -52,7 +52,7 @@ def display_all(knn, mask, frame, bg):
 
 
 def start(webcam, k_size):
-  edge = get_edge(20, False, 200)
+  edge = get_edge(100, False, 200)
 
   contour_num = 3
   avg_contours = []
