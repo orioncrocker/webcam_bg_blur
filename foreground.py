@@ -10,10 +10,7 @@
 import cv2 as cv
 import numpy as np
 
-def get_edge():
-  threshold = 100
-  shadows = False
-  time = 100
+def get_edge(threshold, shadows, time):
   edge = cv.createBackgroundSubtractorKNN(history=time,
           dist2Threshold=threshold, detectShadows=shadows)
   return edge
@@ -25,8 +22,8 @@ def apply_edge(frame, edge):
   return cv.medianBlur(frame, 3)
 
 
-def get_contours(frame):
-  _, thresh = cv.threshold(frame, thresh=0.0, maxval=255.0, type=cv.THRESH_BINARY)
+def get_contours(mask):
+  _, thresh = cv.threshold(mask, thresh=0.0, maxval=255.0, type=cv.THRESH_BINARY)
   _, contours, hierarchy = cv.findContours(thresh, 0, cv.CHAIN_APPROX_TC89_KCOS)
   return contours
 
@@ -55,7 +52,7 @@ def display_all(knn, mask, frame, bg):
 
 
 def start(webcam, k_size):
-  edge = get_edge()
+  edge = get_edge(20, False, 200)
 
   contour_num = 3
   avg_contours = []

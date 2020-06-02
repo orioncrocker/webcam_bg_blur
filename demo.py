@@ -25,116 +25,69 @@ def display_hstack(comment, frame1, frame2):
   stack = np.hstack((frame1, frame2))
   cv.imshow(comment, stack)
 
-def start(webcam):
-    edge = fg.get_edge()
+def start(vid1):
+    edge = fg.get_edge(10, False, 100)
+    stage = 0
 
-    while True:
-        _, frame = webcam.read()
-        mask = fg.apply_edge(frame, edge)
-        mask = cv.cvtColor(mask, cv.COLOR_GRAY2RGB)
-        display_hstack('normal frame, knn', frame, mask)
+    # frame count info
+    frame_count = 1
+    end_frame = vid1.get(cv.CAP_PROP_FRAME_COUNT)
 
-        if cv.waitKey(33) == 27:
-                break
-    cv.destroyAllWindows()
-
+    # contour info
     contour_num = 3
-    avg_contours = []
-    while True:
-        _, frame = webcam.read()
-        mask = fg.apply_edge(frame, edge)
-        contours = fg.get_contours(mask)
-
-        if len(avg_contours) >= contour_num:
-            avg_contours = avg_contours[1:]
-        avg_contours.append(max(contours, key=cv.contourArea))
-
-        frame2 = frame.copy()
-        cv.drawContours(frame, contours, -1, (0,255,0), 10)
-        cv.drawContours(frame2, avg_contours, 0, (0,255,0), 10)
-        display_hstack('all contours, largest contour', frame, frame2)
-
-        if cv.waitKey(33) == 27:
-            break
-    cv.destroyAllWindows()
+    greatest = []
 
     while True:
-        _, frame = webcam.read()
+        _, frame = vid1.read()
+
+        # reset video
+        frame_count += 1
+        if frame_count >= end_frame:
+            vid1.set(cv.CAP_PROP_POS_FRAMES, 0)
+            frame_count = 1
+
         mask = fg.apply_edge(frame, edge)
-        contours = fg.get_contours(mask)
 
-        if len(avg_contours) >= contour_num:
-            avg_contours = avg_contours[1:]
-        avg_contours.append(max(contours, key=cv.contourArea))
+        if stage >= 1:
+            contours = fg.get_contours(mask)
+            if len(greatest) == contour_num:
+                greatest = greatest[1:]
+            greatest.append(max(contours, key=cv.contourArea))
 
-        frame2 = frame.copy()
-        cv.drawContours(frame, avg_contours, 0, (0,255,0), 10)
-        cv.drawContours(frame2, avg_contours, 0, (0,255,0), cv.FILLED*10)
-        display_hstack('largest contours, largest contours filled', frame, frame2)
+            if stage == 1:
+                cv.drawContours(frame, contours, -1, (0,255,0), 5)
+            elif stage == 2:
+                cv.drawContours(frame, greatest, 0, (0, 255, 0), 5)
+            elif stage == 3:
+                cv.drawContours(frame, greatest, 0, (0, 255, 0), cv.FILLED)
+            elif stage == 4:
+                frame = cv.cvtColor(frame, cv.COLOR_BGR2BGRA)
+                mask = frame.copy()
+                cv.drawContours(mask, greatest, 0, (0, 0, 0, 0), cv.FILLED)
+                frame[np.where((mask != [0, 0, 0, 0]).all(axis=2))] = [0, 0, 0, 0]
+            elif stage == 5:
+                mask = fg.blur_bg(frame, greatest, 21)
+                frame = cv.cvtColor(frame, cv.COLOR_BGR2BGRA)
 
-        if cv.waitKey(33) == 27:
+        if stage >= 0 and stage < 4:
+            mask = cv.cvtColor(mask, cv.COLOR_GRAY2RGB)
+        display_hstack('demo: ' + str(stage), frame, mask)
+
+        key = cv.waitKey(33)
+        if key == 27:
+            break
+        elif key == 81:
+            stage -= 1
+            if stage < 0:
+                stage = 0
+            cv.destroyAllWindows()
+        elif key == 83:
+            stage += 1
+            cv.destroyAllWindows()
+
+        if stage > 5:
             break
     cv.destroyAllWindows()
-
-    while True:
-        _, frame = webcam.read()
-        mask = fg.apply_edge(frame, edge)
-        contours = fg.get_contours(mask)
-
-        if len(avg_contours) >= contour_num:
-            avg_contours = avg_contours[1:]
-        avg_contours.append(max(contours, key=cv.contourArea))
-
-        mask, frame = blur_bg_demo(frame, avg_contours)
-
-        stack = np.hstack((mask, frame))
-        cv.imshow('background, foreground', stack)
-
-        if cv.waitKey(33) == 27:
-            break
-
-    cv.destroyAllWindows()
-
-    while True:
-        _, frame = webcam.read()
-        mask = fg.apply_edge(frame, edge)
-        contours = fg.get_contours(mask)
-
-        if len(avg_contours) >= contour_num:
-            avg_contours = avg_contours[1:]
-        avg_contours.append(max(contours, key=cv.contourArea))
-
-        result = fg.blur_bg(frame, avg_contours, 15)
-        cv.imshow('Final result', result)
-
-        if cv.waitKey(33) == 27:
-            break
-    cv.destroyAllWindows()
-
-    
-    _, frame = webcam.read()
-    x,y,h = frame.shape
-    background = cv.imread('test_images/background.png')
-    background = background[:x, :y]
-
-    while True:
-        _, frame = webcam.read()
-        mask = fg.apply_edge(frame, edge)
-        contours = fg.get_contours(mask)
-
-        if len(avg_contours) >= contour_num:
-            avg_contours = avg_contours[1:]
-        avg_contours.append(max(contours, key=cv.contourArea))
-        contours = avg_contours
-
-        bg = background.copy()
-        result = fg.layer_bg(frame, bg, contours)
-        cv.imshow('Final result', result)
-
-        if cv.waitKey(33) == 27:
-            break
-    cv.destroyAllWindows()
-
 
 def main():
     webcam = cv.VideoCapture(0)
@@ -149,7 +102,10 @@ def main():
             print("Any other version might yield differing results, proceed with caution.")
 
         print("\nPress ESC to quit.")
-        start(webcam)
+        vid1 = cv.VideoCapture('test_videos/duncan.mp4')
+        vid2 = cv.VideoCapture('test_videos/joe.mp4')
+        start(vid1)
+        start(vid2)
 
 if __name__ == '__main__':
     main()
