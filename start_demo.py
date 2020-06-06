@@ -1,6 +1,6 @@
 ###########################################################
 # Author: Orion Crocker
-# Filename: demo.py
+# Filename: start_demo.py
 # Date: 05/28/20
 # 
 # Demo
@@ -8,6 +8,7 @@
 # Photography
 ###########################################################
 
+import os, os.path
 import cv2 as cv
 import numpy as np
 import foreground as fg
@@ -17,13 +18,13 @@ def display_hstack(comment, frame1, frame2):
   stack = np.hstack((frame1, frame2))
   cv.imshow(comment, stack)
 
+def display_vstack(comment, frame1, frame2):
+    stack = np.vstack((frame1, frame2))
+    cv.imshow(comment, stack)
 
-def start(vid, label):
+def start(vid, label, bg):
     edge = fg.get_edge(10, False, 100)
     stage = 0
-
-    # test backgrounds
-    bg = cv.imread('bg/forest_path.jpg')
 
     # frame count info
     frame_count = 1
@@ -98,12 +99,15 @@ def start(vid, label):
 def main():
     if not fg.version_check:
         quit()
-
     print("\nPress ESC to quit.")
-    vid1 = cv.VideoCapture('test_videos/duncan.mp4')
-    vid2 = cv.VideoCapture('test_videos/donald.mp4')
-    start(vid1, 'this is a good example')
-    start(vid2, 'this is a bad example')
+
+    # test background
+    bg = cv.imread('bg/forest_path.jpg')
+
+    _, _, test_vids = next(os.walk('test_videos'))
+    for video in test_vids:
+        video = 'test_videos/' + video
+        start(cv.VideoCapture(video), '', bg)
 
 
 if __name__ == '__main__':
