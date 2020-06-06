@@ -33,6 +33,10 @@ Then the two images are simply added together to combine their pixel values into
 
 ![Result](https://github.com/orioncrocker/webcam_bg_blur/blob/master/examples/duncan_result.png)
 
+This technique can also be used to replace the background image with something else.
+
+![Background Replaced](https://github.com/orioncrocker/webcam_bg_blur/blob/master/examples/duncan_bg_replaced.png)
+
 ## Test it out for yourself using your webcam!
 `python3 start.py`
 
