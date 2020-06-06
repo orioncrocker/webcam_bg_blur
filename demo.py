@@ -8,7 +8,6 @@
 # Photography
 ###########################################################
 
-import sys
 import cv2 as cv
 import numpy as np
 import foreground as fg
@@ -19,9 +18,12 @@ def display_hstack(comment, frame1, frame2):
   cv.imshow(comment, stack)
 
 
-def start(vid):
+def start(vid, label):
     edge = fg.get_edge(10, False, 100)
     stage = 0
+
+    # test backgrounds
+    bg = cv.imread('bg/forest_path.jpg')
 
     # frame count info
     frame_count = 1
@@ -63,11 +65,14 @@ def start(vid):
             elif stage == 5:
                 mask = fg.blur_bg(frame, greatest, 21)
                 frame = cv.cvtColor(frame, cv.COLOR_BGR2BGRA)
+            elif stage == 6:
+                mask = fg.layer_bg(frame, bg, greatest)
+                frame = cv.cvtColor(frame, cv.COLOR_BGR2BGRA)
 
         if 0 <= stage < 4:
             mask = cv.cvtColor(mask, cv.COLOR_GRAY2RGB)
 
-        display_hstack('demo: ' + str(stage), frame, mask)
+        display_hstack(label + ' - stage: ' + str(stage), frame, mask)
 
         key = cv.waitKey(33)
         if key == 27:
@@ -85,25 +90,20 @@ def start(vid):
                 if cv.waitKey(33) == 32:
                     break
 
-        if stage > 5:
+        if stage > 6:
             break
     cv.destroyAllWindows()
 
 
 def main():
-    if sys.version_info[0] != 3:
-        print("This program requires python3!")
+    if not fg.version_check:
         quit()
-    version = float(cv.__version__[:3])
-    if version > 3.4 or version < 3.4:
-        print("This program was written for opencv-python version 3.4.2.17!")
-        print("Any other version might yield differing results, proceed with caution.")
 
     print("\nPress ESC to quit.")
     vid1 = cv.VideoCapture('test_videos/duncan.mp4')
     vid2 = cv.VideoCapture('test_videos/donald.mp4')
-    start(vid1)
-    start(vid2)
+    start(vid1, 'this is a good example')
+    start(vid2, 'this is a bad example')
 
 
 if __name__ == '__main__':

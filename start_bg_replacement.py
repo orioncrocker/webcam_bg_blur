@@ -11,7 +11,7 @@ import sys
 import cv2 as cv
 import foreground as fg
 
-def start(webcam, k_size):
+def start(webcam, bg):
   edge = fg.get_edge(100, False, 200)
 
   contour_num = 3
@@ -27,7 +27,7 @@ def start(webcam, k_size):
     avg_contours.append(max(contours, key=cv.contourArea))
     contours = avg_contours
 
-    result = fg.blur_bg(frame, contours, k_size)
+    result = fg.layer_bg(frame, bg, contours)
     cv.imshow('Webcam feed', result)
 
     if cv.waitKey(33) == 27:
@@ -37,12 +37,11 @@ def main():
 
   webcam = cv.VideoCapture(0)
   if webcam.isOpened() and fg.version_check():
+
     print("\nPress ESC to quit.")
 
-    kernel = 21
-    if len(sys.argv) > 1:
-      kernel = int(sys.argv[1])
-    start(webcam, kernel)
+    bg = cv.imread('bg/forest_path.jpg')
+    start(webcam, bg)
 
   else:
     print("Couldn't access your webcam! Is it plugged in?")

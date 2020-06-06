@@ -7,8 +7,21 @@
 # 	detects foreground in image based on KNN algorithm
 ############################################################
 
+import sys
 import cv2 as cv
 import numpy as np
+
+def version_check():
+  correct = True
+  if sys.version_info[0] != 3:
+    print("This program requires python3!")
+    correct = False
+  version = float(cv.__version__[:3])
+  if version > 3.4 or version < 3.4:
+    print("This program was written for opencv-python version 3.4.2.17!")
+    print("Any other version might yield differing results, proceed with caution.")
+  return correct
+
 
 def get_edge(threshold, shadows, time):
   edge = cv.createBackgroundSubtractorKNN(history=time,
@@ -38,8 +51,10 @@ def blur_bg(frame, contours, k):
 
 
 def layer_bg(frame, bg, contours):
-  cv.drawContours(bg, contours, 0, (0, 0, 0), cv.FILLED)
-  frame[np.where((bg != [0, 0, 0]).all(axis=2))] = [0, 0, 0]
+  frame = cv.cvtColor(frame, cv.COLOR_BGR2BGRA)
+  bg = cv.cvtColor(bg, cv.COLOR_BGR2BGRA)
+  cv.drawContours(bg, contours, 0, (0, 0, 0, 0), cv.FILLED)
+  frame[np.where((bg != [0, 0, 0, 0]).all(axis=2))] = [0, 0, 0, 0]
   return frame + bg
 
 
@@ -49,26 +64,3 @@ def display_all(knn, mask, frame, bg):
   bot = np.hstack((frame, bg))
   stack = np.vstack((top, bot))
   cv.imshow('all frames', stack)
-
-
-def start(webcam, k_size):
-  edge = get_edge(100, False, 200)
-
-  contour_num = 3
-  avg_contours = []
-
-  while True:
-    _, frame = webcam.read()
-    mask = apply_edge(frame, edge)
-    contours = get_contours(mask)
-
-    if len(avg_contours) >= contour_num:
-      avg_contours = avg_contours[1:]
-    avg_contours.append(max(contours, key=cv.contourArea))
-    contours = avg_contours
-
-    result = blur_bg(frame, contours, k_size)
-    cv.imshow('result', result)
-
-    if cv.waitKey(33) == 27:
-      break
