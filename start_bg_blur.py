@@ -9,10 +9,32 @@
 
 import cv2 as cv
 import sys
-import foreground
+import foreground as fg
 
+def start(webcam, k_size):
+  edge = fg.get_edge(100, False, 200)
+
+  contour_num = 3
+  avg_contours = []
+
+  while True:
+    _, frame = webcam.read()
+    mask = fg.apply_edge(frame, edge)
+    contours = fg.get_contours(mask)
+
+    if len(avg_contours) >= contour_num:
+      avg_contours = avg_contours[1:]
+    avg_contours.append(max(contours, key=cv.contourArea))
+    contours = avg_contours
+
+    result = fg.blur_bg(frame, contours, k_size)
+    cv.imshow('Webcam feed', result)
+
+    if cv.waitKey(33) == 27:
+      break
 
 def main():
+
   webcam = cv.VideoCapture(0)
   if webcam.isOpened():
     if sys.version_info[0] != 3:
@@ -28,7 +50,7 @@ def main():
     kernel = 21
     if len(sys.argv) > 1:
       kernel = int(sys.argv[1])
-    foreground.start(webcam, kernel)
+    start(webcam, kernel)
 
   else:
     print("Couldn't access your webcam! Is it plugged in?")
