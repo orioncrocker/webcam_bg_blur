@@ -7,7 +7,6 @@
 # 	start script for webcam_bg_blur
 ############################################################
 
-import sys
 import cv2 as cv
 import foreground as fg
 
@@ -34,15 +33,12 @@ def start(webcam, bg):
       break
 
 def main():
-
   webcam = cv.VideoCapture(0)
   if webcam.isOpened() and fg.version_check():
-
     print("\nPress ESC to quit.")
 
     bg = cv.imread('bg/forest_path.jpg')
     start(webcam, bg)
-
   else:
     print("Couldn't access your webcam! Is it plugged in?")
 

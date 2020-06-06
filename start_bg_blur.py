@@ -34,7 +34,6 @@ def start(webcam, k_size):
       break
 
 def main():
-
   webcam = cv.VideoCapture(0)
   if webcam.isOpened() and fg.version_check():
     print("\nPress ESC to quit.")
