@@ -38,10 +38,10 @@ This technique can also be used to replace the background image with something e
 ![Background Replaced](https://github.com/orioncrocker/webcam_bg_blur/blob/master/examples/duncan_bg_replaced.png)
 
 ## Test it out for yourself using your webcam!
-`python3 start.py`
+`python3 start_bg_blur.py`
 
 ## View examples from clips provided
-`python3 demo.py`
+`python3 start_demo.py`
 
 Scroll through visual phases of algorithm using left or right arrow keys, ESC to quit.
 
